@@ -52,16 +52,17 @@ int main() {
     printf("Cliente conectado.\n");
 
     // Recibir la solicitud HTTP
-    char request[2000];
-    int recv_size = recv(client_socket, request, 2000, 0);
-    if (recv_size == SOCKET_ERROR) {
-        printf("Error al recibir datos.\n");
-        return 1;
+    while ((client_socket = accept(server_socket, (struct sockaddr *)&client, &c)) != INVALID_SOCKET) {
+        printf("Cliente conectado.\n");
+    
+        char request[2000];
+        int recv_size = recv(client_socket, request, 2000, 0);
+        if (recv_size > 0) {
+            request[recv_size] = '\0';
+            printf("Peticion recibida:\n%s\n", request);
+            send(client_socket, response, strlen(response), 0);
+        }
+    
+        closesocket(client_socket); // cerrar después de enviar
     }
-
-    request[recv_size] = '\0'; //Terminar el string
-    printf("Peticion recibida:\n%s\n", request);
-
-    //Enviar la respuesta HTTP
-    send(client_socket, response, strlen(response), 0);
 }
