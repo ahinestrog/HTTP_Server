@@ -12,8 +12,11 @@ int main() {
     int c;
     char *response =
         "HTTP/1.1 200 OK\r\n"
-        "content-Type: text/html\r\n\r\n"
-        "<html><body><h1>¡Servidor en C funcionando!</h1></body></html>";
+        "Content-Type: text/html\r\n\r\n"
+        "<html><body style=\"background-color:black; color:white;\">"
+        "<h1>¡Servidor en C funcionando!</h1>"
+        "</body></html>";
+
 
     printf("Iniciando winsock...\n");
     if (WSAStartup(MAKEWORD(2,2), &wsa) != 0) {
