@@ -10,13 +10,6 @@ int main() {
     SOCKET server_socket, client_socket;
     struct sockaddr_in server, client;
     int c;
-    char *response =
-        "HTTP/1.1 200 OK\r\n"
-        "Content-Type: text/html\r\n\r\n"
-        "<html><body style=\"background-color:black; color:white;\">"
-        "<h1>¡Servidor en C funcionando!</h1>"
-        "</body></html>";
-
 
     printf("Iniciando winsock...\n");
     if (WSAStartup(MAKEWORD(2,2), &wsa) != 0) {
@@ -46,15 +39,7 @@ int main() {
     printf("Esperando conexiones en el puerto 8080...\n");
 
     c = sizeof(struct sockaddr_in);
-    client_socket = accept(server_socket, (struct sockaddr *)&client, &c);
-    if (client_socket == INVALID_SOCKET) {
-        printf("Accept fallo. Error: %d\n", WSAGetLastError());
-        return 1;
-    }
-
-    printf("Esperando conexiones en el puerto 8080...\n");
-
-    c = sizeof(struct sockaddr_in);
+    // Recibir la solicitud HTTP
     while ((client_socket = accept(server_socket, (struct sockaddr *)&client, &c)) != INVALID_SOCKET) {
         printf("Cliente conectado.\n");
 
@@ -63,10 +48,58 @@ int main() {
         if (recv_size > 0) {
             request[recv_size] = '\0';
             printf("Peticion recibida:\n%s\n", request);
+            
+            // Analizar la peticion y obtener el nombre del recurso
+            char archivo_solicitado[1024] = {0};
+            sscanf(request, "GET %s HTTP/1.1", archivo_solicitado);
 
-            send(client_socket, response, strlen(response), 0);
+            // Si se pide la raíz "/", cargar index.html
+            if (strcmp(archivo_solicitado, "/") == 0) {
+                strcpy(archivo_solicitado, "index.html");
+            } else {
+                // Eliminar el "/" inicial
+                memmove(archivo_solicitado, archivo_solicitado + 1, strlen(archivo_solicitado));
+            }
+
+            // Si cintiene parametros tipo ?var=1, los ignoramos
+            char *params = strchr(archivo_solicitado, '?');
+            if (params) *params = '\0';
+
+            // Armar la ruta completa al archivo dentro de "www/"
+            char ruta_completa[2048];
+            sprintf(ruta_completa, "www/%s", archivo_solicitado);
+
+            FILE *f = fopen(ruta_completa, "rb");
+            if (f == NULL) {
+                // Archivo no encontrado
+                char *not_found = 
+                    "HTTP/1.1 404 Not Found\r\n"
+                    "Content-Type: text/html\r\n\r\n"
+                    "<html><body><h1>404 No encontrado</h1></body></html>";
+                send(client_socket, not_found, strlen(not_found), 0);
+            } else {
+                // Leer el contenido del archivo
+                fseek(f, 0, SEEK_END);
+                long length = ftell(f);
+                rewind(f);
+                char *contenido = malloc(length + 1);
+                fread(contenido, 1, length, f);
+                contenido[length] = '\0';
+
+                // Cabecera HTTP
+                char header[1024];
+                sprintf(header, "HTTP/1.1 200 0K\r\nContent-Type: text/html\r\n\r\n");
+
+                // Enviar la cabecera y contenido
+                send(client_socket, header, strlen(header), 0);
+                send(client_socket, contenido, length, 0);
+
+                fclose(f);
+                free(contenido); // liberar memoria
+            }
+            }
+            closesocket(client_socket); // cerrar después de enviar la respuesta
         }
-
-        closesocket(client_socket); // Cerrar después de responder
-    }
+        WSACleanup(); // Limpiar winsock
+        return 0;
 }
