@@ -52,20 +52,21 @@ int main() {
         return 1;
     }
 
-    printf("Cliente conectado.\n");
+    printf("Esperando conexiones en el puerto 8080...\n");
 
-    // Recibir la solicitud HTTP
+    c = sizeof(struct sockaddr_in);
     while ((client_socket = accept(server_socket, (struct sockaddr *)&client, &c)) != INVALID_SOCKET) {
         printf("Cliente conectado.\n");
-    
+
         char request[2000];
-        int recv_size = recv(client_socket, request, 2000, 0);
+        int recv_size = recv(client_socket, request, sizeof(request) - 1, 0);
         if (recv_size > 0) {
             request[recv_size] = '\0';
             printf("Peticion recibida:\n%s\n", request);
+
             send(client_socket, response, strlen(response), 0);
         }
-    
-        closesocket(client_socket); // cerrar después de enviar
+
+        closesocket(client_socket); // Cerrar después de responder
     }
 }
