@@ -5,44 +5,14 @@
 
 #pragma comment(lib, "ws2_32.lib") // Enlazar la libreria de windows
 
-int main() {
-    WSADATA wsa;
-    SOCKET server_socket, client_socket;
-    struct sockaddr_in server, client;
-    int c;
+// Función para manejar los clientes
 
-    printf("Iniciando winsock...\n");
-    if (WSAStartup(MAKEWORD(2,2), &wsa) != 0) {
-        printf("Fallo al iniciar. Error: %d\n", WSAGetLastError());
-        return 1;
-    }
+DWORD WINAPI manejar_cliente(LPVOID cliente_socket_ptr) {
+    SOCKET client_socket = *(SOCKET*)cliente_socket_ptr;
+    printf("Atendiendo cliente en hilo ID: %lu\n", GetCurrentThreadId());
+    free(cliente_socket_ptr);  // Liberar memoria asignada por malloc
 
-    // Crear socket
-    server_socket = socket(AF_INET, SOCK_STREAM, 0);
-    if (server_socket == INVALID_SOCKET) {
-        printf("No se pudo crear el socket. Error: %d\n", WSAGetLastError());
-        return 1;
-    }
-
-    // Prepara la estructura sockaddr_in
-    server.sin_family = AF_INET;
-    server.sin_addr.s_addr = INADDR_ANY;
-    server.sin_port = htons(8080);
-
-    // Enlazar
-    if (bind(server_socket, (struct sockaddr *)&server, sizeof(server)) == SOCKET_ERROR) {
-        printf("Bind fallo. Error: %d\n", WSAGetLastError());
-        return 1;
-    }
-
-    listen(server_socket, 3);
-    printf("Esperando conexiones en el puerto 8080...\n");
-
-    c = sizeof(struct sockaddr_in);
-    while ((client_socket = accept(server_socket, (struct sockaddr *)&client, &c)) != INVALID_SOCKET) {
-        printf("Cliente conectado.\n");
-
-        char request[2000];
+    char request[2000];
         int recv_size = recv(client_socket, request, sizeof(request) - 1, 0);
         if (recv_size > 0) {
             request[recv_size] = '\0';
@@ -60,7 +30,7 @@ int main() {
                     "<html><body><h1>400 Peticion incorrecta</h1></body></html>";
                 send(client_socket, bad_request, strlen(bad_request), 0);
                 closesocket(client_socket);
-                continue;
+                return 0;
             }
 
             // *** CAMBIO 2: Procesar los metodos HTTP
@@ -131,6 +101,75 @@ int main() {
             }
         }
         closesocket(client_socket);
+        return 0;
+}
+
+int main() {
+    WSADATA wsa;
+    SOCKET server_socket, client_socket;
+    struct sockaddr_in server, client;
+    int c;
+
+    printf("Iniciando winsock...\n");
+    if (WSAStartup(MAKEWORD(2,2), &wsa) != 0) {
+        printf("Fallo al iniciar. Error: %d\n", WSAGetLastError());
+        return 1;
+    }
+
+    // Crear socket
+    server_socket = socket(AF_INET, SOCK_STREAM, 0);
+    if (server_socket == INVALID_SOCKET) {
+        printf("No se pudo crear el socket. Error: %d\n", WSAGetLastError());
+        return 1;
+    }
+
+    // Prepara la estructura sockaddr_in
+    server.sin_family = AF_INET;
+    server.sin_addr.s_addr = INADDR_ANY;
+    server.sin_port = htons(8080);
+
+    // Enlazar
+    if (bind(server_socket, (struct sockaddr *)&server, sizeof(server)) == SOCKET_ERROR) {
+        printf("Bind fallo. Error: %d\n", WSAGetLastError());
+        return 1;
+    }
+
+    listen(server_socket, 3);
+    printf("Esperando conexiones en el puerto 8080...\n");
+
+    c = sizeof(struct sockaddr_in);
+    while ((client_socket = accept(server_socket, (struct sockaddr *)&client, &c)) != INVALID_SOCKET) {
+        printf("Cliente conectado.\n");
+
+        // Crear un nuevo espacio de memoria para el socket del cliente
+        SOCKET *nuevo_cliente = malloc(sizeof(SOCKET));
+        if (nuevo_cliente == NULL) {
+            printf("Error al asignar memoria para el socket del cliente.\n");
+            closesocket(client_socket); // En caso de tener un error en la memoria asignada al nuevo cliente, cerrar el socket del cliente.
+            continue; // Aceptar otro cliente
+        }
+
+        *nuevo_cliente = client_socket;
+
+        // Crear el hilo para manejar cada cliente en un hilo diferente
+        HANDLE hilo;
+        DWORD id_hilo;
+        hilo = CreateThread(
+            NULL,                // Atributos de seguridad, NULL por defecto
+            0,                   // tamaño de stack por defecto, donde se crearan las posiciones de memoeria dinamicamente
+            manejar_cliente,     // función que ejecutará el hilo
+            nuevo_cliente,       // El socket del cliente se pasa como parámetro
+            0,                   // flags, esto hace que el hilo se ejecute inmediatamente sin delay
+            &id_hilo             // ID del hilo
+        );
+    
+        if (hilo == NULL) {
+            printf("Error al crear el hilo. Código de error: %ld\n", GetLastError());
+            closesocket(client_socket);
+            free(nuevo_cliente);
+        } else {
+            CloseHandle(hilo);  // El hilo se ejecuta de forma independiente, cerrar el handle aquí.
+        }
     }
 
     WSACleanup();
