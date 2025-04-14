@@ -1,3 +1,6 @@
 gcc server.c -o server.exe -lws2_32
 ./server.exe
+./server.exe 8080 server.log www 
 http://192.168.206.1:8080
+curl -I http://localhost:8080/index.html -> Probar GET
+curl -X POST http://localhost:8080/ -d "nombre=alejandro&mensaje=hola"  -> Probar POST
