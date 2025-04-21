@@ -106,6 +106,7 @@ Aquí se crea el "canal de comunicación" del servidor, usando:
 - AF_INET: indica que es red IPv4.
 - SOCK_STREAM: para conexión tipo TCP.
 - 0: protocolo por defecto.
+
 Si falla, se muestra un error y se detiene el programa.
 
 ```c
