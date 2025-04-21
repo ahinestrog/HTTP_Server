@@ -75,7 +75,6 @@ DWORD WINAPI manejar_cliente(LPVOID cliente_socket_ptr) {
             // Registrar la petición recibida
             logger("REQUEST", metodo, recurso, 0, client_ip);
 
-            // *** CAMBIO 2: Procesar los metodos HTTP
             if (strcmp(metodo, "GET") == 0 || strcmp(metodo, "HEAD") == 0) {
                 // Si se pide la raíz "/", cargar index.html
                 if (strcmp(recurso, "/") == 0) {
@@ -85,7 +84,7 @@ DWORD WINAPI manejar_cliente(LPVOID cliente_socket_ptr) {
                     memmove(recurso, recurso + 1, strlen(recurso));
                 }
 
-                // Ignorar parámetros tipo ?var=1
+                // Ignorar parámetros tipo ?var
                 char *params = strchr(recurso, '?');
                 if (params) *params = '\0';
 
@@ -95,7 +94,7 @@ DWORD WINAPI manejar_cliente(LPVOID cliente_socket_ptr) {
 
                 FILE *f = fopen(ruta_completa, "rb");
                 if (f == NULL) {
-                    // Archivo no encontrado → 404
+                    // Archivo no encontrado 404
                     logger("RESPONSE", metodo, recurso, 404, client_ip);
                     char *not_found = 
                         "HTTP/1.1 404 Not Found\r\n"
@@ -138,7 +137,7 @@ DWORD WINAPI manejar_cliente(LPVOID cliente_socket_ptr) {
                 send(client_socket, post_response, strlen(post_response), 0);
             } 
             else {
-                // Metodo no soportado → 400
+                // Metodo no soportado 400
                 logger("RESPONSE", metodo, recurso, 400, client_ip);
 
                 char *bad_request = 
@@ -162,7 +161,6 @@ int main(int argc, char *argv[]) {
     if (argc < 4) {
         printf("Uso: %s <puerto> <archivo_log> <carpeta_documentos>\n", argv[0]);
         return 1;
-
     }
 
     // Cargar el puerto
