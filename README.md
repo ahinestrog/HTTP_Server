@@ -7,6 +7,17 @@
 
 ## 1. Introducción:
 
+En este proyecto se presenta el desarrollo e implementación de un servidor HTTP/1.1 utilizando el lenguaje de programación C, para el estudio y un mejor entendimiento de la arquitectura TCP/IP. El objetivo fue construir un servidor que tuviera la capacidad de atender a distintos clientes al mismo tiempo, entregar recursos web y procesar solicitudes del protocolo HTTP.
+
+Para llevar a cabo la implementación se utilizaron recursos como **sockets**, a través de la **librería Windows Sockets (Winsock)**, permitiendo la comunicación a nivel de red mediante conexiones TCP. Además, se hizo uso de **hilos (threads)** para gestionar múltiples clientes de manera simultanea, asignando a cada uno un espacio de ejecución diferente para permitir varios clientes al mismo tiempo.
+
+El servidor permite interpretar y responder a los métodos HTTP **GET**, **HEAD** y **POST**, siguiendo la especificación del estándar HTTP/1.1. Además, se implementó el manejo adecuado de errores mediante los códigos de respuesta **200 OK**, **400 Bad Request** y **404 Not Found.**.
+
+Por último, se incluyó un sistema de **registro de logs**, que permite llevar un historial de todas las peticiones recibidas y las respuestas enviadas por el servidor, lo que permite el monitoreo de las conexiones y peticiones realizadas en todo momento.
+
+Este proyecto se desarrolló como parte del curso de **Telemática**, y se desplegó usando la infraestructura de AWS.
+
+
 ## 2. Desarrollo/implementación: 
 ### Librerías: 
 **<stdio.h>**  - Para funciones como: `printf()`, `sprintf()`, `fopen()`, `fprintf()`, `fclose()`,
