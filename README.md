@@ -137,6 +137,50 @@ Si no se logra extraer bien, responde con un error 400 que se presenta en texto 
 ### Función Main
 
 ```c
+int main(int argc, char *argv[]) {
+    WSADATA wsa;
+    SOCKET server_socket, client_socket;
+    struct sockaddr_in server, client;
+    int c;
+```
+En el main ingresan como parámetros el número de argumentos y la lista de estos argumentos, los cuales consisten en el formato de entrada por consola del programa. Posteriormente se inicializa el la libreria de windows socket, se inicializan los sockets del cliente y del servidor, se inicializan las estructuras para deifinir las direcciones IP y el puerto y finalmente se define un entero que consiste en el tamaño de la estructura sockaddr_in.
+
+```c
+    if (argc < 4) {
+        printf("Uso: %s <puerto> <archivo_log> <carpeta_documentos>\n", argv[0]);
+        return 1;
+    }
+```
+Aquí se verifica que la entrada por CLI se haya hecho de manera correcta para correr el programa, de caso contrario retorna error.
+
+```c
+    int puerto = atoi(argv[1]);
+    strcpy(log_file_path, argv[2]);
+    char document_root[1024];
+    strcpy(document_root, argv[3]);
+```
+En caso de que la entrada sea correcta se procede a convertir el segundo argumeto de la lista en un entero y se guarda en una variable, este argumento consiste en el numero de puerto a usar.  
+Luego usamos la función “strcpy()” para copiar el valor del tercer argumento ingresado  por CLI que correspone a el nombre que el usuario le desea poner al archivo logger y lo pega en la variable global “log_file_path”. 
+Se realiza el mismo proceso con el cuarto argumento que correspone al nombre de la carpeta donde se alojan los recursos web y se pega en la variable “document_root”.
+
+```c
+     logger("INFO", NULL, NULL, 0, "Server");
+    printf("Iniciando servidor en puerto %d, log: %s, directorio: %s\n", 
+           puerto, log_file_path, document_root);
+```
+Aquí se procede a llamar a la funcion “logger()” que va a guardar un log de tipo “INFO” de parte del servidor y posteriormente imprime el puerto, el nombre del log y el nombre de la carpeta de los recursos web con base en los argumentos recibidos.
+
+```c
+    printf("Iniciando winsock...\n");
+    if (WSAStartup(MAKEWORD(2,2), &wsa) != 0) {
+        printf("Fallo al iniciar. Error: %d\n", WSAGetLastError());
+        logger("ERROR", NULL, NULL, WSAGetLastError(), "Server");
+        return 1;
+    }
+```
+Por medio de un codicional iniciamos la librería de los sockets con la version 2.2, si esta falla entonces muestra el error por consola, se guarda un log de tipo “ERROR” y se sale del programa.
+
+```c
     server_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (server_socket == INVALID_SOCKET) {
         printf("No se pudo crear el socket. Error: %d\n", WSAGetLastError());
