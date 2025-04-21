@@ -64,31 +64,32 @@ Esta función se ejecuta en un hilo diferente por cada cliente. Se le pasa un pu
     printf("Atendiendo cliente en hilo ID: %lu\n", GetCurrentThreadId());
     free(cliente_socket_ptr);  // Libera la memoria reservada
 ```
+Estas líneas obtienen la dirección IP del cliente que se conectó 
 
-    // Estas líneas obtienen la dirección IP del cliente que se conectó 
-
+```c
     char request[2000];
     int recv_size = recv(client_socket, request, sizeof(request) - 1, 0);
+```
+Con estas líneas se recibe el mensaje que envió el navegador
 
-    // Con estas líneas se recibe el mensaje que envió el navegador
-
+```c
     if (recv_size > 0) {
         request[recv_size] = '\0';
         printf("Peticion recibida:\n%s\n", request);
+```
+Aquí se termina el texto recibido por parte del navegador y se imprime todo el request
 
-        // Aquí se termina el texto recibido por parte del navegador y se imprime todo el request
-
+```c
         char metodo[8];
         char recurso[1024];
         char version[16];
         if (sscanf(request, "%s %s %s", metodo, recurso, version) != 3) {
-
-            // Se extraen tres partes del mensaje:
-            // - El método (GET, POST, etc.)
-            // - Los recursos los cuales son los HTML
-            // - La versión (HTTP/1.1)
-            // Si no se logra extraer bien, responde con un error 400 que se presenta en texto en la página.
 ```
+Se extraen tres partes del mensaje:
+- El método (GET, POST, etc.)
+- Los recursos los cuales son los HTML
+- La versión (HTTP/1.1)
+  Si no se logra extraer bien, responde con un error 400 que se presenta en texto en la página.
 
 
 ### Función Main
