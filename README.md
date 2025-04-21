@@ -119,6 +119,7 @@ Aquí se configuran los parámetros de red:
 - AF_INET: familia de direcciones IPv4.
 - INADDR_ANY: acepta conexiones desde cualquier IP.
 - htons(puerto): convierte el puerto a formato de red.
+
 Esto indica dónde va a escuchar el servidor.
 
 ```c
