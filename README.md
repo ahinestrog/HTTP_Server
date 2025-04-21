@@ -103,9 +103,9 @@ Se extraen tres partes del mensaje:
     }
 ```
 Aquí se crea el "canal de comunicación" del servidor, usando:
-• AF_INET: indica que es red IPv4.
-• SOCK_STREAM: para conexión tipo TCP.
-• 0: protocolo por defecto.
+- AF_INET: indica que es red IPv4.
+- SOCK_STREAM: para conexión tipo TCP.
+- 0: protocolo por defecto.
 Si falla, se muestra un error y se detiene el programa.
 
 ```c
@@ -114,9 +114,9 @@ Si falla, se muestra un error y se detiene el programa.
     server.sin_port = htons(puerto);
 ```
 Aquí se configuran los parámetros de red:
-• AF_INET: familia de direcciones IPv4.
-• INADDR_ANY: acepta conexiones desde cualquier IP.
-• htons(puerto): convierte el puerto a formato de red.
+- AF_INET: familia de direcciones IPv4.
+- INADDR_ANY: acepta conexiones desde cualquier IP.
+- htons(puerto): convierte el puerto a formato de red.
 Esto indica dónde va a escuchar el servidor.
 
 ```c
@@ -135,17 +135,17 @@ Si no puede hacerlo (por ejemplo, si el puerto ya está en uso), imprime error y
     logger("INFO", "SERVER", "LISTENING", puerto, "Server");
 ```
 Activa el socket para comenzar a recibir conexiones.
-• El 3 indica cuántas conexiones puede mantener en cola.
-• Se imprime y se registra en el log que el servidor está escuchando.
+- El 3 indica cuántas conexiones puede mantener en cola.
+- Se imprime y se registra en el log que el servidor está escuchando.
 
 ```c
     c = sizeof(struct sockaddr_in);
     while ((client_socket = accept(server_socket, (struct sockaddr *)&client, &c)) != INVALID_SOCKET) {
         printf("Cliente conectado.\n");
 ```
-• Guarda el tamaño de la estructura client.
-• Entra en un bucle infinito donde acepta conexiones (accept).
-• Cuando un cliente se conecta, lo imprime en consola.
+- Guarda el tamaño de la estructura client.
+- Entra en un bucle infinito donde acepta conexiones (accept).
+- Cuando un cliente se conecta, lo imprime en consola.
 
 ```c
         SOCKET *nuevo_cliente = malloc(sizeof(SOCKET));
@@ -156,8 +156,8 @@ Activa el socket para comenzar a recibir conexiones.
             continue;
         }
 ```
-• Reserva memoria para guardar el socket del cliente (porque se lo va a pasar a un hilo).
-• Si no hay memoria disponible, muestra error, lo registra y vuelve a esperar otro cliente.
+- Reserva memoria para guardar el socket del cliente (porque se lo va a pasar a un hilo).
+- Si no hay memoria disponible, muestra error, lo registra y vuelve a esperar otro cliente.
 
 
 ## 3. Conclusiones: 
