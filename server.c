@@ -162,6 +162,7 @@ int main(int argc, char *argv[]) {
     if (argc < 4) {
         printf("Uso: %s <puerto> <archivo_log> <carpeta_documentos>\n", argv[0]);
         return 1;
+
     }
 
     // Cargar el puerto
