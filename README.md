@@ -56,10 +56,13 @@ Posteriormente mostramos el mensaje en la consola y abrimos el documento ***.log
 
 ```c
 DWORD WINAPI manejar_cliente(LPVOID cliente_socket_ptr) {
+```c
     // Esta función se ejecuta en un hilo diferente por cada cliente.
     // Se le pasa un puntero al socket (la conexión con el navegador)
 
+```c
     SOCKET client_socket = (SOCKET)cliente_socket_ptr;
+```c
     printf("Atendiendo cliente en hilo ID: %lu\n", GetCurrentThreadId());
     free(cliente_socket_ptr);  // Libera la memoria reservada
 
