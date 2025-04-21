@@ -89,7 +89,7 @@ Se extraen tres partes del mensaje:
 - El método (GET, POST, etc.)
 - Los recursos los cuales son los HTML
 - La versión (HTTP/1.1)
-  Si no se logra extraer bien, responde con un error 400 que se presenta en texto en la página.
+Si no se logra extraer bien, responde con un error 400 que se presenta en texto en la página.
 
 
 ### Función Main
