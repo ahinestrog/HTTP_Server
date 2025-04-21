@@ -94,6 +94,72 @@ Se extraen tres partes del mensaje:
 
 ### Función Main
 
+```c
+    server_socket = socket(AF_INET, SOCK_STREAM, 0);
+    if (server_socket == INVALID_SOCKET) {
+        printf("No se pudo crear el socket. Error: %d\n", WSAGetLastError());
+        logger("ERROR", NULL, NULL, WSAGetLastError(), "Server");
+        return 1;
+    }
+```
+Aquí se crea el "canal de comunicación" del servidor, usando:
+• AF_INET: indica que es red IPv4.
+• SOCK_STREAM: para conexión tipo TCP.
+• 0: protocolo por defecto.
+Si falla, se muestra un error y se detiene el programa.
+
+```c
+    server.sin_family = AF_INET;
+    server.sin_addr.s_addr = INADDR_ANY;
+    server.sin_port = htons(puerto);
+```
+Aquí se configuran los parámetros de red:
+• AF_INET: familia de direcciones IPv4.
+• INADDR_ANY: acepta conexiones desde cualquier IP.
+• htons(puerto): convierte el puerto a formato de red.
+Esto indica dónde va a escuchar el servidor.
+
+```c
+    if (bind(server_socket, (struct sockaddr *)&server, sizeof(server)) == SOCKET_ERROR) {
+        printf("Bind fallo. Error: %d\n", WSAGetLastError());
+        logger("ERROR", NULL, NULL, WSAGetLastError(), "Server");
+        return 1;
+    }
+```
+Asocia el socket con la dirección IP y puerto configurados.
+Si no puede hacerlo (por ejemplo, si el puerto ya está en uso), imprime error y sale.
+
+```c
+    listen(server_socket, 3);
+    printf("Esperando conexiones en el puerto 8080...\n");
+    logger("INFO", "SERVER", "LISTENING", puerto, "Server");
+```
+Activa el socket para comenzar a recibir conexiones.
+• El 3 indica cuántas conexiones puede mantener en cola.
+• Se imprime y se registra en el log que el servidor está escuchando.
+
+```c
+    c = sizeof(struct sockaddr_in);
+    while ((client_socket = accept(server_socket, (struct sockaddr *)&client, &c)) != INVALID_SOCKET) {
+        printf("Cliente conectado.\n");
+```
+• Guarda el tamaño de la estructura client.
+• Entra en un bucle infinito donde acepta conexiones (accept).
+• Cuando un cliente se conecta, lo imprime en consola.
+
+```c
+        SOCKET *nuevo_cliente = malloc(sizeof(SOCKET));
+        if (nuevo_cliente == NULL) {
+            printf("Error al asignar memoria para el socket del cliente.\n");
+            logger("ERROR", "SERVER", "MEMORY", 0, "Server");
+            closesocket(client_socket);
+            continue;
+        }
+```
+• Reserva memoria para guardar el socket del cliente (porque se lo va a pasar a un hilo).
+• Si no hay memoria disponible, muestra error, lo registra y vuelve a esperar otro cliente.
+
+
 ## 3. Conclusiones: 
 * Después de investigar e implementar el protocolo HTTP/1.1, hemos logrado una mejor comprensión sobre la gestión de métodos comunes como **GET** & **POST**. Aunque estos métodos son habituales en frameworks como Django, donde la capa de bajo nivel está abstraída, como desarrolladores no solíamos dimensionar la complejidad y cantidad de procesos subyacentes. Este proyecto nos ha permitido entender estos métodos con mayor profundidad.
 * El hecho de interactuar con Sockets ha permitido que veamos una imagen más grande sobre todas las funcionalidades que proveen los sistemas operativos. Aspectos como el manejo de la memoria dinámica y el tratamiento de hilos impactaron positivamente en nuestra comprensión, en el sentido de que ahora podemos responder con mayor claridad sobre cómo el computador gestiona y almacena los datos.
