@@ -133,6 +133,52 @@ Se extraen tres partes del mensaje:
 
 Si no se logra extraer bien, responde con un error 400 que se presenta en texto en la página.
 
+```c
+if (strcmp(metodo, "GET") == 0 || strcmp(metodo, "HEAD") == 0) {
+    // Si se pide la raíz "/", cargar index.html
+    if (strcmp(recurso, "/") == 0) {
+        strcpy(recurso, "index.html");
+    } else {
+        // Eliminar el "/" inicial
+        memmove(recurso, recurso + 1, strlen(recurso));
+    }
+```
+Por medio de un condicional se compara primero el input método, en caso de ser de tipo GET o HEAD, luego por medio de otro condicional se pregunta si el recurso al que se quiere acceder es la raíz que se representa unicamente con el símbolo “/”, en caso de ser verdadero se accede al recurso “index.html”. Si no es la raíz entonces se mueve la cadena una posición a la izquierda para eliminar el símbolo “/” y lo que resta de la cadena será entonces el recurso.
+
+Luego se busca en la cadena de recurso si contiene parametros de tipo “?”, en caso de que si los tenga entonces reemplaza la cadena a partir de este punto por “\0” para que esta parte sea ignorada.
+Posteriormente se completa la ruta del archivo con el nombre de la carpeta y el nombre del recurso para acceder a éste.
+
+```c
+    FILE *f = fopen(ruta_completa, "rb");
+        if (f == NULL) {
+            // Archivo no encontrado → 404
+            logger("RESPONSE", metodo, recurso, 404, client_ip);
+```
+Se procede a abrir el arcivo en binario y en modo lectura. En caso de que el archivo sea nulo, es decir que no se encuentre, se retorna el error “404”, donde no se encuentra el recurso, se registra un log con el error y se manda una respuesta http con el html de error.
+
+```c
+    fseek(f, 0, SEEK_END);
+    long length = ftell(f);
+    rewind(f);
+    char *contenido = malloc(length + 1);
+    fread(contenido, 1, length, f);
+    contenido[length] = '\0';
+```
+En caso de que no sea nulo entonces se mueve el puntero al final del archivo y se guarda la posición actual en la variable “length” y posteriormente devuelve el puntero al inicio. Luego reserva la posicion de memoria y lee el archivo, y en la posicion final se agrega el elemento “\0” para terminar la cadena.
+
+```c
+    if (strcmp(metodo, "GET") == 0) {
+        send(client_socket, contenido, length, 0);
+    }
+```
+Luego se crea y se envia el encabezado con el código “200” que representa que todo está correcto, se crea un log con éste código también. Posteriormente se hace un condicional verificando si el método es GET, en caso de que sea verdadero se manda tambien el recurso solicitado ya que el método HEAD no envía el body. Para terminar el condicional cierra el archivo y libera el espacio en memoria de éste.
+
+```c
+    else if (strcmp(metodo, "POST") == 0)
+```
+Posteriormente en un condicional se pregunta si el método de petición es POST, en caso de que sea verdadero entonces se crea un log con el código “200” y se confirma la recepción de los datos y se manda un html por medio del protocolo http.
+
+Si la petición no correspondió con ninguno de los métodos se guarda un log con el código de error “400” que corresponde a una mala petición o a una petición no soportada. Y posteriormente manda por el protocolo HTTP un html con el código de error. Finalmente se cierra la conexión con el cliente, es decir se cierra el sokcket y termina el método. 
 
 ### Función Main
 
