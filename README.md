@@ -56,13 +56,10 @@ Posteriormente mostramos el mensaje en la consola y abrimos el documento ***.log
 
 ```c
 DWORD WINAPI manejar_cliente(LPVOID cliente_socket_ptr) {
-```c
     // Esta función se ejecuta en un hilo diferente por cada cliente.
     // Se le pasa un puntero al socket (la conexión con el navegador)
 
-```c
     SOCKET client_socket = (SOCKET)cliente_socket_ptr;
-```c
     printf("Atendiendo cliente en hilo ID: %lu\n", GetCurrentThreadId());
     free(cliente_socket_ptr);  // Libera la memoria reservada
 
@@ -89,6 +86,7 @@ DWORD WINAPI manejar_cliente(LPVOID cliente_socket_ptr) {
             // - Los recursos los cuales son los HTML
             // - La versión (HTTP/1.1)
             // Si no se logra extraer bien, responde con un error 400 que se presenta en texto en la página.
+```
 
 
 ### Función Main
